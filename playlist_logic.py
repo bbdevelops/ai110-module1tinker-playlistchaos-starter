@@ -178,13 +178,26 @@ def lucky_pick(
     playlists: PlaylistMap,
     mode: str = "any",
 ) -> Optional[Song]:
-    """Pick a song from the playlists according to mode."""
+    """Pick a song from the playlists according to mode.
+
+    mode options:
+        "hype"  – only Hype songs (energy >= hype_min_energy)
+        "chill" – only Chill songs (energy <= chill_max_energy)
+        "mixed" – only Mixed songs (energy between 4 and 6)
+        "any"   – all three playlists combined
+    """
     if mode == "hype":
         songs = playlists.get("Hype", [])
     elif mode == "chill":
         songs = playlists.get("Chill", [])
+    elif mode == "mixed":
+        songs = playlists.get("Mixed", [])
     else:
-        songs = playlists.get("Hype", []) + playlists.get("Chill", [])
+        songs = (
+            playlists.get("Hype", [])
+            + playlists.get("Chill", [])
+            + playlists.get("Mixed", [])
+        )
 
     return random_choice_or_none(songs)
 
@@ -197,7 +210,11 @@ def random_choice_or_none(songs: List[Song]) -> Optional[Song]:
 
 
 def history_summary(history: List[Song]) -> Dict[str, int]:
-    """Return a summary of moods seen in the history."""
+    """Return a count of each mood (Hype, Chill, Mixed) seen in the history.
+
+    Mixed songs can appear here because lucky_pick now includes the Mixed
+    playlist in both "mixed" mode and the default "any" mode.
+    """
     counts = {"Hype": 0, "Chill": 0, "Mixed": 0}
     for song in history:
         mood = song.get("mood", "Mixed")
